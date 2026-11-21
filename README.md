@@ -1,3 +1,5 @@
+[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md)
+
 # Injection Defense Spring Boot Starter
 
 Spring Boot application enables a simple injection defense, to prevent SQL injections and XSS injections.

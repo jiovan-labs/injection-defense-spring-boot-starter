@@ -76,6 +76,7 @@ public class InjectionDefenseProperties implements Serializable {
      * Properties for defender filter
      *
      * @author David Hsing
+     *
      * @see com.jiovan.spring.starter.injectiondefense.filter.InjectionDefenseFilter
      */
     @Getter

@@ -27,6 +27,7 @@ import lombok.Getter;
  * Event when xss injection be intercepted
  *
  * @author David Hsing
+ *
  * @see org.springframework.web.context.support.ServletRequestHandledEvent
  * @see com.jiovan.spring.starter.injectiondefense.exception.MaliciousXssException
  */
