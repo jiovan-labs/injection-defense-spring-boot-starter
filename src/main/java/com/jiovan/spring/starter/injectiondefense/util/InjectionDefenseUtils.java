@@ -27,9 +27,24 @@ import com.jiovan.plexus.common.toolkit.util.RegexUtilsWraps;
 
 
 /**
- * Utilities for injection defense
+ * Heuristic pattern-matching utilities for detecting SQL injection and XSS attempts.
+ * <p>
+ * <b>Important limitations:</b> detection here is based on a small set of regular expressions
+ * and is intentionally conservative. It catches only common, obvious payloads and can be
+ * bypassed by obfuscation or less common vectors. It is meant as a lightweight early-warning
+ * and coarse filtering layer, <b>not</b> as a security boundary:
+ * <ul>
+ *     <li>SQL injection must be prevented at the data-access layer with parameterized queries
+ *         or an ORM — never by relying on request filtering.</li>
+ *     <li>XSS must be prevented with context-aware output escaping (and ideally a Content
+ *         Security Policy) — input cleaning alone is not sufficient.</li>
+ * </ul>
+ * Consider replacing these heuristics with a lexical/fingerprint-based composer (for example
+ * libinjection) when stronger detection is required.
  *
  * @author David Hsing
+ *
+ * @see com.jiovan.spring.starter.injectiondefense.filter.InjectionDefenseFilter
  */
 @SuppressWarnings({"unused", "BooleanMethodIsAlwaysInverted", "UnusedReturnValue"})
 public abstract class InjectionDefenseUtils {
@@ -43,7 +58,6 @@ public abstract class InjectionDefenseUtils {
      *
      * @return whether the {@code sequence} may contain an SQL injection pattern
      */
-
     public static boolean maybeSqlInjection(@Nullable CharSequence sequence) {
         return StringUtils.isNotBlank(sequence) && RegexUtilsWraps.find(sequence, SQL_QUOTE);
     }
@@ -55,7 +69,6 @@ public abstract class InjectionDefenseUtils {
      *
      * @return whether any of the {@code sequences} may contain an SQL injection pattern
      */
-
     public static boolean maybeSqlInjection(@Nullable CharSequence... sequences) {
         return maybeSqlInjection(ArrayUtilsWraps.asList(sequences));
     }
@@ -67,7 +80,6 @@ public abstract class InjectionDefenseUtils {
      *
      * @return whether any sequence in {@code sequences} may contain an SQL injection pattern
      */
-
     public static boolean maybeSqlInjection(@Nullable Collection<? extends CharSequence> sequences) {
         return !CollectionUtils.isEmpty(sequences) && sequences.stream().anyMatch(InjectionDefenseUtils::maybeSqlInjection);
     }
@@ -79,7 +91,6 @@ public abstract class InjectionDefenseUtils {
      *
      * @return whether the {@code sequence} may contain an XSS injection pattern
      */
-
     public static boolean maybeXssInjection(@Nullable CharSequence sequence) {
         return StringUtils.isNotBlank(sequence) && RegexUtilsWraps.find(sequence, XSS_BRACKET);
     }
@@ -91,7 +102,6 @@ public abstract class InjectionDefenseUtils {
      *
      * @return whether any of the {@code sequences} may contain an XSS injection pattern
      */
-
     public static boolean maybeXssInjection(@Nullable CharSequence... sequences) {
         return maybeXssInjection(ArrayUtilsWraps.asList(sequences));
     }
@@ -103,7 +113,6 @@ public abstract class InjectionDefenseUtils {
      *
      * @return whether any sequence in {@code sequences} may contain an XSS injection pattern
      */
-
     public static boolean maybeXssInjection(@Nullable Collection<? extends CharSequence> sequences) {
         return !CollectionUtils.isEmpty(sequences) && sequences.stream().anyMatch(InjectionDefenseUtils::maybeXssInjection);
     }

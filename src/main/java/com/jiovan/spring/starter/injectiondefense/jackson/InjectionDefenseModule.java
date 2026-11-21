@@ -19,6 +19,7 @@ package com.jiovan.spring.starter.injectiondefense.jackson;
 
 import jakarta.annotation.Nonnull;
 import org.springframework.context.ApplicationEventPublisher;
+import com.jiovan.spring.starter.injectiondefense.composer.InjectionDetector;
 import com.jiovan.spring.starter.injectiondefense.property.InjectionDefenseProperties;
 import tools.jackson.databind.module.SimpleModule;
 
@@ -29,8 +30,8 @@ import tools.jackson.databind.module.SimpleModule;
  * @author David Hsing
  */
 public class InjectionDefenseModule extends SimpleModule {
-    public InjectionDefenseModule(@Nonnull InjectionDefenseProperties properties, @Nonnull ApplicationEventPublisher publisher) {
+    public InjectionDefenseModule(@Nonnull InjectionDefenseProperties properties, @Nonnull ApplicationEventPublisher publisher, @Nonnull InjectionDetector detector) {
         super("InjectionDefenseModule");
-        addDeserializer(String.class, new InjectionDefenseDeserializer(properties, publisher));
+        addDeserializer(String.class, new InjectionDefenseDeserializer(properties, publisher, detector));
     }
 }

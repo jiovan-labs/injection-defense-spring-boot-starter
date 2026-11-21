@@ -29,12 +29,12 @@ import com.jiovan.plexus.common.toolkit.util.JsoupParserWraps;
 import com.jiovan.plexus.spring.toolkit.util.AntPathWraps;
 import com.jiovan.plexus.spring.toolkit.util.UriUtilsWraps;
 import com.jiovan.plexus.spring.toolkit.util.WebUtilsWraps;
+import com.jiovan.spring.starter.injectiondefense.composer.InjectionDetector;
 import com.jiovan.spring.starter.injectiondefense.event.MaliciousSqlEvent;
 import com.jiovan.spring.starter.injectiondefense.event.MaliciousXssEvent;
 import com.jiovan.spring.starter.injectiondefense.exception.MaliciousSqlException;
 import com.jiovan.spring.starter.injectiondefense.exception.MaliciousXssException;
 import com.jiovan.spring.starter.injectiondefense.property.InjectionDefenseProperties;
-import com.jiovan.spring.starter.injectiondefense.util.InjectionDefenseUtils;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
@@ -50,10 +50,12 @@ import tools.jackson.databind.ValueDeserializer;
 public class InjectionDefenseDeserializer extends ValueDeserializer<String> {
     private final InjectionDefenseProperties properties;
     private final ApplicationEventPublisher publisher;
+    private final InjectionDetector detector;
 
-    public InjectionDefenseDeserializer(InjectionDefenseProperties properties, ApplicationEventPublisher publisher) {
+    public InjectionDefenseDeserializer(InjectionDefenseProperties properties, ApplicationEventPublisher publisher, InjectionDetector detector) {
         this.properties = properties;
         this.publisher = publisher;
+        this.detector = detector;
     }
 
     @Override
@@ -79,7 +81,7 @@ public class InjectionDefenseDeserializer extends ValueDeserializer<String> {
             return fieldValue;
         }
         String fieldName = parser.currentName();
-        if (sqlValidate && InjectionDefenseUtils.maybeSqlInjection(fieldValue)) {
+        if (sqlValidate && detector.maybeSqlInjection(fieldValue)) {
             if (publisher != null) {
                 publisher.publishEvent(new MaliciousSqlEvent(request, fieldName, fieldValue));
             }
@@ -88,7 +90,7 @@ public class InjectionDefenseDeserializer extends ValueDeserializer<String> {
             }
         }
         if (xssValidate) {
-            if (InjectionDefenseUtils.maybeXssInjection(fieldValue)) {
+            if (detector.maybeXssInjection(fieldValue)) {
                 if (publisher != null) {
                     publisher.publishEvent(new MaliciousXssEvent(request, fieldName, fieldValue));
                 }

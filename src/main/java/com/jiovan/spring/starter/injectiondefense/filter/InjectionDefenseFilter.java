@@ -33,29 +33,43 @@ import com.jiovan.plexus.common.toolkit.util.BooleanUtilsWraps;
 import com.jiovan.plexus.common.toolkit.util.JsoupParserWraps;
 import com.jiovan.plexus.spring.toolkit.util.AntPathWraps;
 import com.jiovan.plexus.spring.toolkit.util.UriUtilsWraps;
+import com.jiovan.spring.starter.injectiondefense.composer.InjectionDetector;
 import com.jiovan.spring.starter.injectiondefense.event.MaliciousSqlEvent;
 import com.jiovan.spring.starter.injectiondefense.event.MaliciousXssEvent;
 import com.jiovan.spring.starter.injectiondefense.exception.MaliciousSqlException;
 import com.jiovan.spring.starter.injectiondefense.exception.MaliciousXssException;
 import com.jiovan.spring.starter.injectiondefense.property.InjectionDefenseProperties;
 import com.jiovan.spring.starter.injectiondefense.support.InjectionDefenseRequestWrapper;
-import com.jiovan.spring.starter.injectiondefense.util.InjectionDefenseUtils;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 
 /**
- * {@link jakarta.servlet.Filter} for injection defense
+ * {@link jakarta.servlet.Filter} that performs heuristic SQL injection and XSS checks on
+ * request parameters, and optionally cleans parameter values with Jsoup.
+ * <p>
+ * <b>Scope and limitations:</b>
+ * <ul>
+ *     <li>Detection inspects {@code request.getParameterMap()} only. Request headers, cookies,
+ *         path variables and request bodies are not scanned here.</li>
+ *     <li>Detection is pattern-based and can be bypassed; it is an auxiliary early-warning layer,
+ *         not a security boundary. It does not replace parameterized queries or output escaping.</li>
+ *     <li>XSS cleaning is applied to values read through {@link InjectionDefenseRequestWrapper};
+ *         code that reads the original request directly bypasses it.</li>
+ * </ul>
  *
  * @author David Hsing
  * @see org.springframework.web.filter.OncePerRequestFilter
+ * @see com.jiovan.spring.starter.injectiondefense.composer.InjectionDetector
+ * @see com.jiovan.spring.starter.injectiondefense.support.InjectionDefenseRequestWrapper
  */
 @RequiredArgsConstructor
 @AllArgsConstructor
 @SuppressWarnings("unused")
 public class InjectionDefenseFilter extends OncePerRequestFilter implements ApplicationEventPublisherAware {
     private final InjectionDefenseProperties properties;
+    private final InjectionDetector detector;
 
     @Setter
     private ApplicationEventPublisher applicationEventPublisher;
@@ -68,7 +82,7 @@ public class InjectionDefenseFilter extends OncePerRequestFilter implements Appl
         Map<String, String[]> parameters = request.getParameterMap();
         if (!CollectionUtils.isEmpty(parameters)) {
             for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
-                if (sqlValidate && InjectionDefenseUtils.maybeSqlInjection(entry.getValue())) {
+                if (sqlValidate && detector.maybeSqlInjection(entry.getValue())) {
                     if (applicationEventPublisher != null) {
                         applicationEventPublisher.publishEvent(new MaliciousSqlEvent(request, entry.getKey(), entry.getValue()));
                     }
@@ -76,7 +90,7 @@ public class InjectionDefenseFilter extends OncePerRequestFilter implements Appl
                         throw new MaliciousSqlException("Request may be a malicious access", entry.getKey(), entry.getValue());
                     }
                 }
-                if (xssValidate && InjectionDefenseUtils.maybeXssInjection(entry.getValue())) {
+                if (xssValidate && detector.maybeXssInjection(entry.getValue())) {
                     if (applicationEventPublisher != null) {
                         applicationEventPublisher.publishEvent(new MaliciousXssEvent(request, entry.getKey(), entry.getValue()));
                     }

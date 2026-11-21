@@ -103,6 +103,16 @@ public class InjectionDefenseRequestWrapper extends ContentCachingRequestWrapper
         return Arrays.stream(result).map(element -> StringUtils.isBlank(element) ? element : Jsoup.clean(element, xssWhitelist)).toArray(String[]::new);
     }
 
+    /**
+     * Returns cookies whose values are cleaned in place when XSS cleaning is active.
+     * <p>
+     * <b>Caveat:</b> this mutates the {@link Cookie} instances returned by the underlying request
+     * and only affects code that reads cookies through this wrapper. Code holding a reference to
+     * the original request, or reading cookies before this wrapper is applied, is not affected.
+     * Do not treat this as a reliable cookie sanitization boundary.
+     *
+     * @return the cookies, with cleaned values when applicable
+     */
     @Override
     public Cookie[] getCookies() {
         Cookie[] result = super.getCookies();

@@ -31,6 +31,11 @@ import org.springframework.context.annotation.Configuration;
 import com.jiovan.plexus.common.toolkit.util.CollectionPlainWraps;
 import com.jiovan.plexus.common.toolkit.util.MapPlainWraps;
 import com.jiovan.plexus.spring.condition.annotation.ConditionalOnAnyBooleanProperties;
+import com.jiovan.spring.starter.injectiondefense.composer.InjectionDetector;
+import com.jiovan.spring.starter.injectiondefense.composer.impl.HybridInjectionDetector;
+import com.jiovan.spring.starter.injectiondefense.composer.impl.LibInjectionDetector;
+import com.jiovan.spring.starter.injectiondefense.composer.impl.SimpleInjectionDetector;
+import com.jiovan.spring.starter.injectiondefense.enumeration.InjectionDefenderType;
 import com.jiovan.spring.starter.injectiondefense.filter.InjectionDefenseFilter;
 import com.jiovan.spring.starter.injectiondefense.jackson.InjectionDefenseModule;
 import com.jiovan.spring.starter.injectiondefense.property.InjectionDefenseProperties;
@@ -48,21 +53,38 @@ import tools.jackson.databind.ObjectMapper;
 @EnableConfigurationProperties(value = InjectionDefenseProperties.class)
 public class InjectionDefenseAutoConfiguration {
     public static final String PROPERTIES_PREFIX = "jiovan.injection-defense";    // $NON-NLS-1$
-    public static final String JACKSON_INJECTION_DEFENDER_CUSTOMIZER = "jacksonInjectionDefenseCustomizer";    // $NON-NLS-1$
+    public static final String JACKSON_MODULE = "jacksonInjectionDefenseModule";    // $NON-NLS-1$
+
+    /**
+     * Returns the {@link InjectionDetector} selected by {@code defenderType}.
+     *
+     * @param properties the injection defense properties
+     *
+     * @return the configured composer strategy
+     */
+    @Bean
+    @ConditionalOnMissingBean(value = InjectionDetector.class)
+    public InjectionDetector injectionDetector(@Nonnull InjectionDefenseProperties properties) {
+        return switch (properties.getDefenderType() != null ? properties.getDefenderType() : InjectionDefenderType.HYBRID) {
+            case SIMPLE -> new SimpleInjectionDetector();
+            case LIBINJECTION -> new LibInjectionDetector();
+            default -> new HybridInjectionDetector();
+        };
+    }
 
     /**
      * Returns a {@link org.springframework.boot.web.servlet.FilterRegistrationBean} that registers the {@link com.jiovan.spring.starter.injectiondefense.filter.InjectionDefenseFilter}
      *
      * @param properties the injection defense properties used to configure the filter order, URL patterns and init parameters
      * @param publisher the application event publisher passed to the filter
+     * @param detector the injection composer strategy
      *
      * @return the registration bean for the {@link com.jiovan.spring.starter.injectiondefense.filter.InjectionDefenseFilter}
      */
-
     @Bean
     @ConditionalOnMissingBean(value = InjectionDefenseFilter.class, parameterizedContainer = FilterRegistrationBean.class)
-    public FilterRegistrationBean<InjectionDefenseFilter> injectionDefenderFilterRegistration(@Nonnull InjectionDefenseProperties properties, @Nonnull ApplicationEventPublisher publisher) {
-        InjectionDefenseFilter filter = new InjectionDefenseFilter(properties, publisher);
+    public FilterRegistrationBean<InjectionDefenseFilter> injectionDefenderFilterRegistration(@Nonnull InjectionDefenseProperties properties, @Nonnull ApplicationEventPublisher publisher, @Nonnull InjectionDetector detector) {
+        InjectionDefenseFilter filter = new InjectionDefenseFilter(properties, detector, publisher);
         FilterRegistrationBean<InjectionDefenseFilter> result = new FilterRegistrationBean<>(filter);
         InjectionDefenseProperties.DefenderFilter props = properties.getDefenderFilter();
         Optional.ofNullable(props.getFilerOrder()).ifPresent(result::setOrder);
@@ -76,18 +98,18 @@ public class InjectionDefenseAutoConfiguration {
      *
      * @param properties the injection defense properties used to configure the deserializer
      * @param publisher the application event publisher passed to the deserializer
+     * @param detector the injection composer strategy
      *
      * @return a module that registers the deserializer for {@link java.lang.String}
      */
-
-    @Bean(name = JACKSON_INJECTION_DEFENDER_CUSTOMIZER)
+    @Bean(name = JACKSON_MODULE)
     @ConditionalOnAnyBooleanProperties(value = {
         @ConditionalOnBooleanProperty(prefix = InjectionDefenseAutoConfiguration.PROPERTIES_PREFIX + ".sql-protection", name = "enabled", matchIfMissing = true),
         @ConditionalOnBooleanProperty(prefix = InjectionDefenseAutoConfiguration.PROPERTIES_PREFIX + ".xss-protection", name = "enabled", matchIfMissing = true)
     })
     @ConditionalOnClass(value = ObjectMapper.class)
-    @ConditionalOnMissingBean(name = JACKSON_INJECTION_DEFENDER_CUSTOMIZER)
-    public InjectionDefenseModule jacksonInjectionDefenseCustomizer(@Nonnull InjectionDefenseProperties properties, @Nonnull ApplicationEventPublisher publisher) {
-        return new InjectionDefenseModule(properties, publisher);
+    @ConditionalOnMissingBean(name = JACKSON_MODULE)
+    public InjectionDefenseModule jacksonInjectionDefenseModule(@Nonnull InjectionDefenseProperties properties, @Nonnull ApplicationEventPublisher publisher, @Nonnull InjectionDetector detector) {
+        return new InjectionDefenseModule(properties, publisher, detector);
     }
 }

@@ -24,6 +24,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.core.Ordered;
 import com.jiovan.plexus.common.toolkit.enumeration.JsoupWhitelistType;
 import com.jiovan.spring.starter.injectiondefense.config.InjectionDefenseAutoConfiguration;
+import com.jiovan.spring.starter.injectiondefense.enumeration.InjectionDefenderType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -45,6 +46,15 @@ public class InjectionDefenseProperties implements Serializable {
      * Default is {@code true}
      */
     private Boolean enabled = true;
+
+    /**
+     * The injection detection strategy
+     * <p>
+     * Default is {@code HYBRID}, which combines both strategies and intercepts when either
+     * detects a threat. Set to {@code SIMPLE} for the built-in regular-expression heuristics only,
+     * or {@code LIBINJECTION} for libinjection-jvm lexical and fingerprint analysis only.
+     */
+    private InjectionDefenderType defenderType = InjectionDefenderType.HYBRID;
 
     /**
      * Defender filter attributes

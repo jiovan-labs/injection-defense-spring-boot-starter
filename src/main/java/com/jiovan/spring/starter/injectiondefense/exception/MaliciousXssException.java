@@ -25,9 +25,14 @@ import lombok.experimental.StandardException;
 
 
 /**
- * Checked exception thrown that may be a xss injection
+ * Unchecked exception thrown when a request parameter may contain an XSS injection attempt.
+ * <p>
+ * This is raised by the heuristic detection layer of this starter and is <b>not</b> a substitute
+ * for context-aware output escaping. See {@link com.jiovan.spring.starter.injectiondefense.filter.InjectionDefenseFilter}.
  *
  * @author David Hsing
+ *
+ * @see com.jiovan.spring.starter.injectiondefense.util.InjectionDefenseUtils
  */
 @NoArgsConstructor
 @Getter

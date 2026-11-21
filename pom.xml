@@ -50,7 +50,9 @@
         <spring-boot.version>4.1.0</spring-boot.version>
 
         <jsoup.version>1.24.1</jsoup.version>
+        <libinjection-jvm.version>1.2.0</libinjection-jvm.version>
         <plexus-spring-condition.version>4.1.0</plexus-spring-condition.version>
+
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
         <maven-install-plugin.version>3.1.4</maven-install-plugin.version>
         <maven-jar-plugin.version>3.5.0</maven-jar-plugin.version>
@@ -91,7 +93,11 @@
         <dependency>
             <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.cloud-apim</groupId>
+            <artifactId>libinjection-jvm</artifactId>
+            <version>${libinjection-jvm.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jsoup</groupId>
