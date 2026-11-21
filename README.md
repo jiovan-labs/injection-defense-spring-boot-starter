@@ -1,6 +1,6 @@
-# Injection Defender Spring Boot Starter
+# Injection Defense Spring Boot Starter
 
-Spring Boot application enables a simple injection defender, to prevent SQL injections and XSS injections.
+Spring Boot application enables a simple injection defense, to prevent SQL injections and XSS injections.
 
 ## Quickstart
 
@@ -8,19 +8,19 @@ Spring Boot application enables a simple injection defender, to prevent SQL inje
 
 ```xml
     <dependency>
-        <groupId>cn.unikue.springstarter</groupId>
-        <artifactId>injection-defender-spring-boot-starter</artifactId>
+        <groupId>com.jiovan.spring.starter</groupId>
+        <artifactId>injection-defense-spring-boot-starter</artifactId>
         <version>LATEST</version>
     </dependency>
 ```
 
-> By default, this starter will auto take effect, you can turn it off by `spring.injection-defender.enabled = false`
+> By default, this starter will auto take effect, you can turn it off by `jiovan.injection-defense.enabled = false`
 
-- Configure Spring Boot `application.yml` with prefix `spring.injection-defender` (**Optional**)
+- Configure Spring Boot `application.yml` with prefix `jiovan.injection-defense` (**Optional**)
 
 ```yml
-spring:
-    injection-defender:
+jiovan:
+    injection-defense:
         defender-filter:
             filter-paths:
                 - '/**'
@@ -35,7 +35,7 @@ spring:
 
 ## Document
 
-- Github: https://github.com/unikueltd/injection-defender-spring-boot-starter
+- Github: https://github.com/jiovan-labs/injection-defense-spring-boot-starter
 
 ## Requirement
 
@@ -49,12 +49,12 @@ See the `NOTICE.txt` file for required notices and attributions.
 
 ## Donation
 
-You like this package? Then [donate to us](https://unikue.cn/donation) to support the development.
+You like this package? Then [donate to us](https://jiovan.com/donation) to support the development.
 
 ## Copyright
 
-Beijing Unikue Network Technology Ltd.
+Beijing Jiovan Technology Ltd.
 
 ## Website
 
-- Unikue: https://unikue.cn
+- Jiovan: https://jiovan.com

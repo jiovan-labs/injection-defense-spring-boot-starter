@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Unikue Ltd. All rights reserved.
+ * Copyright (c) 2022 Jiovan Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,71 +14,72 @@
  * limitations under the License.
  */
 
-package cn.unikue.springstarter.injectiondefender.jackson;
+package com.jiovan.spring.starter.injectiondefense.jackson;
 
 
-import java.io.IOException;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.util.CollectionUtils;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import cn.unikue.commonplexus.javaseutil.constant.CharVariantConst;
-import cn.unikue.commonplexus.javaseutil.util.BooleanUtilsWraps;
-import cn.unikue.commonplexus.javaseutil.util.JsoupParserWraps;
-import cn.unikue.commonplexus.springutil.util.AntPathWraps;
-import cn.unikue.commonplexus.springutil.util.UriUtilsWraps;
-import cn.unikue.commonplexus.springutil.util.WebUtilsWraps;
-import cn.unikue.springstarter.injectiondefender.event.MaliciousSqlEvent;
-import cn.unikue.springstarter.injectiondefender.event.MaliciousXssEvent;
-import cn.unikue.springstarter.injectiondefender.exception.MaliciousSqlException;
-import cn.unikue.springstarter.injectiondefender.exception.MaliciousXssException;
-import cn.unikue.springstarter.injectiondefender.property.InjectionDefenderProperties;
-import cn.unikue.springstarter.injectiondefender.util.InjectionDefenderUtils;
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import com.jiovan.plexus.common.toolkit.constant.CharVariantConst;
+import com.jiovan.plexus.common.toolkit.util.BooleanUtilsWraps;
+import com.jiovan.plexus.common.toolkit.util.JsoupParserWraps;
+import com.jiovan.plexus.spring.toolkit.util.AntPathWraps;
+import com.jiovan.plexus.spring.toolkit.util.UriUtilsWraps;
+import com.jiovan.plexus.spring.toolkit.util.WebUtilsWraps;
+import com.jiovan.spring.starter.injectiondefense.event.MaliciousSqlEvent;
+import com.jiovan.spring.starter.injectiondefense.event.MaliciousXssEvent;
+import com.jiovan.spring.starter.injectiondefense.exception.MaliciousSqlException;
+import com.jiovan.spring.starter.injectiondefense.exception.MaliciousXssException;
+import com.jiovan.spring.starter.injectiondefense.property.InjectionDefenseProperties;
+import com.jiovan.spring.starter.injectiondefense.util.InjectionDefenseUtils;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
 
 
 /**
- * {@link com.fasterxml.jackson.databind.JsonDeserializer} for injection defender
+ * {@link tools.jackson.databind.ValueDeserializer} for injection defense
  *
  * @author David Hsing
  */
-@RequiredArgsConstructor
-@AllArgsConstructor
 @SuppressWarnings("unused")
-public class InjectionDefenderDeserializer extends JsonDeserializer<String> {
-    private final InjectionDefenderProperties properties;
-    private ApplicationEventPublisher publisher;
+public class InjectionDefenseDeserializer extends ValueDeserializer<String> {
+    private final InjectionDefenseProperties properties;
+    private final ApplicationEventPublisher publisher;
+
+    public InjectionDefenseDeserializer(InjectionDefenseProperties properties, ApplicationEventPublisher publisher) {
+        this.properties = properties;
+        this.publisher = publisher;
+    }
 
     @Override
-    public String deserialize(@Nullable JsonParser parser, @Nullable DeserializationContext context) throws IOException {
+    public String deserialize(@Nullable JsonParser parser, @Nullable DeserializationContext context) throws JacksonException {
         if (parser == null) {
             return null;
         }
-        String fieldValue = parser.getText();
+        String fieldValue = parser.getString();
         if (StringUtils.isBlank(fieldValue)) {
-            return trimIfPossible(fieldValue);
+            return fieldValue;
         }
         HttpServletRequest request = WebUtilsWraps.getContextServletRequest();
-        InjectionDefenderProperties.DefenderFilter filterProps = properties.getDefenderFilter();
-        InjectionDefenderProperties.SqlProtection sqlProps = properties.getSqlProtection();
-        InjectionDefenderProperties.XssProtection xssProps = properties.getXssProtection();
+        InjectionDefenseProperties.DefenderFilter filterProps = properties.getDefenderFilter();
+        InjectionDefenseProperties.SqlProtection sqlProps = properties.getSqlProtection();
+        InjectionDefenseProperties.XssProtection xssProps = properties.getXssProtection();
         if (request == null || BooleanUtilsWraps.allNotTrue(sqlProps.getEnabled(), xssProps.getEnabled())) {
-            return trimIfPossible(fieldValue);
+            return fieldValue;
         }
         String servletPath = UriUtilsWraps.getServletPath(request);
         boolean sqlValidate = BooleanUtils.isTrue(sqlProps.getEnabled()) && (CollectionUtils.isEmpty(filterProps.getExcludePaths()) || !AntPathWraps.matchAnyPatterns(servletPath, filterProps.getExcludePaths()));
         boolean xssValidate = BooleanUtils.isTrue(xssProps.getEnabled()) && (CollectionUtils.isEmpty(filterProps.getExcludePaths()) || !AntPathWraps.matchAnyPatterns(servletPath, filterProps.getExcludePaths()));
         if (!sqlValidate && !xssValidate) {
-            return trimIfPossible(fieldValue);
+            return fieldValue;
         }
         String fieldName = parser.currentName();
-        if (sqlValidate && InjectionDefenderUtils.maybeSqlInjection(fieldValue)) {
+        if (sqlValidate && InjectionDefenseUtils.maybeSqlInjection(fieldValue)) {
             if (publisher != null) {
                 publisher.publishEvent(new MaliciousSqlEvent(request, fieldName, fieldValue));
             }
@@ -87,7 +88,7 @@ public class InjectionDefenderDeserializer extends JsonDeserializer<String> {
             }
         }
         if (xssValidate) {
-            if (InjectionDefenderUtils.maybeXssInjection(fieldValue)) {
+            if (InjectionDefenseUtils.maybeXssInjection(fieldValue)) {
                 if (publisher != null) {
                     publisher.publishEvent(new MaliciousXssEvent(request, fieldName, fieldValue));
                 }
@@ -99,10 +100,6 @@ public class InjectionDefenderDeserializer extends JsonDeserializer<String> {
                 fieldValue = JsoupParserWraps.cleanWith(fieldValue, xssProps.getWhitelistType());
             }
         }
-        return trimIfPossible(fieldValue);
-    }
-
-    private String trimIfPossible(@Nullable String text) {
-        return BooleanUtils.isTrue(properties.getTrimParams()) ? (BooleanUtils.isTrue(properties.getTrimToNull()) ? StringUtils.trimToNull(text) : StringUtils.trim(text)) : text;
+        return fieldValue;
     }
 }

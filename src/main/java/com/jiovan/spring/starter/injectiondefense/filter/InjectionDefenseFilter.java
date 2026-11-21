@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Unikue Ltd. All rights reserved.
+ * Copyright (c) 2022 Jiovan Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.unikue.springstarter.injectiondefender.filter;
+package com.jiovan.spring.starter.injectiondefense.filter;
 
 
 import java.io.IOException;
@@ -29,24 +29,24 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import cn.unikue.commonplexus.javaseutil.util.BooleanUtilsWraps;
-import cn.unikue.commonplexus.javaseutil.util.JsoupParserWraps;
-import cn.unikue.commonplexus.springutil.util.AntPathWraps;
-import cn.unikue.commonplexus.springutil.util.UriUtilsWraps;
-import cn.unikue.springstarter.injectiondefender.event.MaliciousSqlEvent;
-import cn.unikue.springstarter.injectiondefender.event.MaliciousXssEvent;
-import cn.unikue.springstarter.injectiondefender.exception.MaliciousSqlException;
-import cn.unikue.springstarter.injectiondefender.exception.MaliciousXssException;
-import cn.unikue.springstarter.injectiondefender.property.InjectionDefenderProperties;
-import cn.unikue.springstarter.injectiondefender.support.InjectionDefenderRequestWrapper;
-import cn.unikue.springstarter.injectiondefender.util.InjectionDefenderUtils;
+import com.jiovan.plexus.common.toolkit.util.BooleanUtilsWraps;
+import com.jiovan.plexus.common.toolkit.util.JsoupParserWraps;
+import com.jiovan.plexus.spring.toolkit.util.AntPathWraps;
+import com.jiovan.plexus.spring.toolkit.util.UriUtilsWraps;
+import com.jiovan.spring.starter.injectiondefense.event.MaliciousSqlEvent;
+import com.jiovan.spring.starter.injectiondefense.event.MaliciousXssEvent;
+import com.jiovan.spring.starter.injectiondefense.exception.MaliciousSqlException;
+import com.jiovan.spring.starter.injectiondefense.exception.MaliciousXssException;
+import com.jiovan.spring.starter.injectiondefense.property.InjectionDefenseProperties;
+import com.jiovan.spring.starter.injectiondefense.support.InjectionDefenseRequestWrapper;
+import com.jiovan.spring.starter.injectiondefense.util.InjectionDefenseUtils;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 
 /**
- * {@link jakarta.servlet.Filter} for injection defender
+ * {@link jakarta.servlet.Filter} for injection defense
  *
  * @author David Hsing
  * @see org.springframework.web.filter.OncePerRequestFilter
@@ -54,21 +54,21 @@ import lombok.Setter;
 @RequiredArgsConstructor
 @AllArgsConstructor
 @SuppressWarnings("unused")
-public class InjectionDefenderFilter extends OncePerRequestFilter implements ApplicationEventPublisherAware {
-    private final InjectionDefenderProperties properties;
+public class InjectionDefenseFilter extends OncePerRequestFilter implements ApplicationEventPublisherAware {
+    private final InjectionDefenseProperties properties;
 
     @Setter
     private ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     protected void doFilterInternal(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response, @Nonnull FilterChain chain) throws ServletException, IOException {
-        InjectionDefenderProperties.SqlProtection sqlProps = properties.getSqlProtection();
-        InjectionDefenderProperties.XssProtection xssProps = properties.getXssProtection();
+        InjectionDefenseProperties.SqlProtection sqlProps = properties.getSqlProtection();
+        InjectionDefenseProperties.XssProtection xssProps = properties.getXssProtection();
         boolean sqlValidate = BooleanUtils.isTrue(sqlProps.getEnabled()), xssValidate = BooleanUtils.isTrue(xssProps.getEnabled());
         Map<String, String[]> parameters = request.getParameterMap();
         if (!CollectionUtils.isEmpty(parameters)) {
             for (Map.Entry<String, String[]> entry : parameters.entrySet()) {
-                if (sqlValidate && InjectionDefenderUtils.maybeSqlInjection(entry.getValue())) {
+                if (sqlValidate && InjectionDefenseUtils.maybeSqlInjection(entry.getValue())) {
                     if (applicationEventPublisher != null) {
                         applicationEventPublisher.publishEvent(new MaliciousSqlEvent(request, entry.getKey(), entry.getValue()));
                     }
@@ -76,7 +76,7 @@ public class InjectionDefenderFilter extends OncePerRequestFilter implements App
                         throw new MaliciousSqlException("Request may be a malicious access", entry.getKey(), entry.getValue());
                     }
                 }
-                if (xssValidate && InjectionDefenderUtils.maybeXssInjection(entry.getValue())) {
+                if (xssValidate && InjectionDefenseUtils.maybeXssInjection(entry.getValue())) {
                     if (applicationEventPublisher != null) {
                         applicationEventPublisher.publishEvent(new MaliciousXssEvent(request, entry.getKey(), entry.getValue()));
                     }
@@ -87,7 +87,7 @@ public class InjectionDefenderFilter extends OncePerRequestFilter implements App
             }
         }
         if (xssValidate && BooleanUtils.isTrue(xssProps.getCleanParams())) {
-            InjectionDefenderRequestWrapper wrapper = new InjectionDefenderRequestWrapper(request, true, JsoupParserWraps.getSafelist(xssProps.getWhitelistType()));
+            InjectionDefenseRequestWrapper wrapper = new InjectionDefenseRequestWrapper(request, true, JsoupParserWraps.getSafelist(xssProps.getWhitelistType()));
             chain.doFilter(wrapper, response);
             return;
         }
@@ -96,13 +96,13 @@ public class InjectionDefenderFilter extends OncePerRequestFilter implements App
 
     @Override
     protected boolean shouldNotFilter(@Nonnull HttpServletRequest request) throws ServletException {
-        InjectionDefenderProperties.DefenderFilter filterProps = properties.getDefenderFilter();
+        InjectionDefenseProperties.DefenderFilter filterProps = properties.getDefenderFilter();
         if (!CollectionUtils.isEmpty(filterProps.getExcludePaths())) {
             String servletPath = UriUtilsWraps.getServletPath(request);
             return AntPathWraps.matchAnyPatterns(servletPath, filterProps.getExcludePaths());
         }
-        InjectionDefenderProperties.SqlProtection sqlProps = properties.getSqlProtection();
-        InjectionDefenderProperties.XssProtection xssProps = properties.getXssProtection();
+        InjectionDefenseProperties.SqlProtection sqlProps = properties.getSqlProtection();
+        InjectionDefenseProperties.XssProtection xssProps = properties.getXssProtection();
         if (BooleanUtilsWraps.allNotTrue(sqlProps.getEnabled(), xssProps.getEnabled())) {
             return true;
         }

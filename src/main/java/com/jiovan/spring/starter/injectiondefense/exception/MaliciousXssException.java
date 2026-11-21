@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Unikue Ltd. All rights reserved.
+ * Copyright (c) 2022 Jiovan Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package cn.unikue.springstarter.injectiondefender.exception;
+package com.jiovan.spring.starter.injectiondefense.exception;
 
 
 import jakarta.annotation.Nullable;
-import cn.unikue.commonplexus.javaseutil.exception.MaliciousAccessException;
+import com.jiovan.plexus.common.toolkit.exception.MaliciousAccessException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.StandardException;

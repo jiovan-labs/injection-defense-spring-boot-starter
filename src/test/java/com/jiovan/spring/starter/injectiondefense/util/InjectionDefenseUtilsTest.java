@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Unikue Ltd. All rights reserved.
+ * Copyright (c) 2022 Jiovan Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,26 +14,26 @@
  * limitations under the License.
  */
 
-package cn.unikue.springstarter.injectiondefender.util;
+package com.jiovan.spring.starter.injectiondefense.util;
 
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import cn.unikue.commonplexus.javaseutil.util.StackTraceWraps;
+import com.jiovan.plexus.common.toolkit.util.StackTraceWraps;
 import lombok.extern.slf4j.Slf4j;
 
 
 /**
- * Tests for {@link cn.unikue.springstarter.injectiondefender.util.InjectionDefenderUtils}
+ * Tests for {@link InjectionDefenseUtils}
  *
  * @author David Hsing
  */
 @Slf4j
-class InjectionDefenderUtilsTest {
+class InjectionDefenseUtilsTest {
     @Test
     void startWithNegative() {
         String injection = "-1' union select 1,2,3 --+";
-        boolean result = InjectionDefenderUtils.maybeSqlInjection(injection);
+        boolean result = InjectionDefenseUtils.maybeSqlInjection(injection);
         log.info("{} = {}", StackTraceWraps.getExecutingMethodName(), result);
         Assertions.assertTrue(result);
     }
@@ -41,7 +41,7 @@ class InjectionDefenderUtilsTest {
     @Test
     void startWithPositive() {
         String injection = "1' or show database();";
-        boolean result = InjectionDefenderUtils.maybeSqlInjection(injection);
+        boolean result = InjectionDefenseUtils.maybeSqlInjection(injection);
         log.info("{} = {}", StackTraceWraps.getExecutingMethodName(), result);
         Assertions.assertTrue(result);
     }
@@ -49,7 +49,7 @@ class InjectionDefenderUtilsTest {
     @Test
     void startWithAlphabetic() {
         String injection = "admin' or create table --";
-        boolean result = InjectionDefenderUtils.maybeSqlInjection(injection);
+        boolean result = InjectionDefenseUtils.maybeSqlInjection(injection);
         log.info("{} = {}", StackTraceWraps.getExecutingMethodName(), result);
         Assertions.assertTrue(result);
     }
@@ -57,7 +57,7 @@ class InjectionDefenderUtilsTest {
     @Test
     void startWithAlphanumeric() {
         String injection = "admin-777' or drop table --";
-        boolean result = InjectionDefenderUtils.maybeSqlInjection(injection);
+        boolean result = InjectionDefenseUtils.maybeSqlInjection(injection);
         log.info("{} = {}", StackTraceWraps.getExecutingMethodName(), result);
         Assertions.assertTrue(result);
     }

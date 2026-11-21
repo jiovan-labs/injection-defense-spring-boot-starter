@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Unikue Ltd. All rights reserved.
+ * Copyright (c) 2022 Jiovan Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.unikue.springstarter.injectiondefender.property;
+package com.jiovan.spring.starter.injectiondefense.property;
 
 
 import java.io.Serializable;
@@ -22,39 +22,29 @@ import java.util.Map;
 import java.util.Set;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.core.Ordered;
-import cn.unikue.commonplexus.javaseutil.enumeration.JsoupWhitelistType;
-import cn.unikue.springstarter.injectiondefender.config.InjectionDefenderAutoConfiguration;
+import com.jiovan.plexus.common.toolkit.enumeration.JsoupWhitelistType;
+import com.jiovan.spring.starter.injectiondefense.config.InjectionDefenseAutoConfiguration;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 
 /**
- * Properties for injection defender
+ * Properties for injection defense
  *
  * @author David Hsing
  */
-@ConfigurationProperties(prefix = InjectionDefenderAutoConfiguration.PROPERTIES_PREFIX)
+@ConfigurationProperties(prefix = InjectionDefenseAutoConfiguration.PROPERTIES_PREFIX)
 @Getter
 @Setter
 @ToString
-public class InjectionDefenderProperties implements Serializable {
+public class InjectionDefenseProperties implements Serializable {
     /**
      * Indicates whether to enable this starter or not
      * <p>
      * Default is {@code true}
      */
     private Boolean enabled = true;
-
-    /**
-     * Indicates whether to trim request parameters or not
-     */
-    private Boolean trimParams;
-
-    /**
-     * Indicates whether to trim empty request parameters to null or not
-     */
-    private Boolean trimToNull;
 
     /**
      * Defender filter attributes
@@ -76,7 +66,7 @@ public class InjectionDefenderProperties implements Serializable {
      * Properties for defender filter
      *
      * @author David Hsing
-     * @see cn.unikue.springstarter.injectiondefender.filter.InjectionDefenderFilter
+     * @see com.jiovan.spring.starter.injectiondefense.filter.InjectionDefenseFilter
      */
     @Getter
     @Setter
@@ -107,7 +97,7 @@ public class InjectionDefenderProperties implements Serializable {
 
 
     /**
-     * Properties for sql protection
+     * Properties for SQL protection
      *
      * @author David Hsing
      */
@@ -116,14 +106,14 @@ public class InjectionDefenderProperties implements Serializable {
     @ToString
     public static class SqlProtection implements Serializable {
         /**
-         * Indicates whether to enable sql protection or not
+         * Indicates whether to enable SQL protection or not
          * <p>
          * Default is {@code true}
          */
         private Boolean enabled = true;
 
         /**
-         * Indicates whether to throw a {@link cn.unikue.springstarter.injectiondefender.exception.MaliciousSqlException} when injection occurred or not
+         * Indicates whether to throw a {@link com.jiovan.spring.starter.injectiondefense.exception.MaliciousSqlException} when injection occurred or not
          * <p>
          * Default is {@code true}
          */
@@ -155,7 +145,7 @@ public class InjectionDefenderProperties implements Serializable {
         private Boolean cleanParams = true;
 
         /**
-         * Indicates whether to throw a {@link cn.unikue.springstarter.injectiondefender.exception.MaliciousXssException} when injection occurred or not
+         * Indicates whether to throw a {@link com.jiovan.spring.starter.injectiondefense.exception.MaliciousXssException} when injection occurred or not
          */
         private Boolean throwsException;
 

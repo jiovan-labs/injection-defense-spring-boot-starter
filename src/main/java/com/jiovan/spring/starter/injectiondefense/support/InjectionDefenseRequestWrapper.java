@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Unikue Ltd. All rights reserved.
+ * Copyright (c) 2022 Jiovan Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.unikue.springstarter.injectiondefender.support;
+package com.jiovan.spring.starter.injectiondefense.support;
 
 
 import java.util.Arrays;
@@ -29,32 +29,32 @@ import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
 import org.springframework.web.util.ContentCachingRequestWrapper;
-import cn.unikue.commonplexus.javaseutil.util.MapPlainWraps;
+import com.jiovan.plexus.common.toolkit.util.MapPlainWraps;
 import lombok.Getter;
 import lombok.Setter;
 
 
 /**
- * {@link org.springframework.web.util.ContentCachingRequestWrapper} for injection defender
+ * {@link org.springframework.web.util.ContentCachingRequestWrapper} for injection defense
  *
  * @author David Hsing
  */
 @Getter
 @Setter
 @SuppressWarnings("unused")
-public class InjectionDefenderRequestWrapper extends ContentCachingRequestWrapper {
+public class InjectionDefenseRequestWrapper extends ContentCachingRequestWrapper {
     private boolean xssClean = true;
     private Safelist xssWhitelist;
 
-    public InjectionDefenderRequestWrapper(@Nonnull HttpServletRequest request) {
+    public InjectionDefenseRequestWrapper(@Nonnull HttpServletRequest request) {
         super(request, -1);
     }
 
-    public InjectionDefenderRequestWrapper(@Nonnull HttpServletRequest request, int contentCacheLimit) {
+    public InjectionDefenseRequestWrapper(@Nonnull HttpServletRequest request, int contentCacheLimit) {
         super(request, contentCacheLimit);
     }
 
-    public InjectionDefenderRequestWrapper(@Nonnull HttpServletRequest request, boolean xssClean, @Nullable Safelist xssWhitelist) {
+    public InjectionDefenseRequestWrapper(@Nonnull HttpServletRequest request, boolean xssClean, @Nullable Safelist xssWhitelist) {
         super(request, -1);
         this.xssClean = xssClean;
         this.xssWhitelist = xssWhitelist;
@@ -124,21 +124,57 @@ public class InjectionDefenderRequestWrapper extends ContentCachingRequestWrappe
         return (StringUtils.isBlank(result) || !xssClean || xssWhitelist == null) ? result : Jsoup.clean(result, xssWhitelist);
     }
 
+    /**
+     * Returns the raw value of the request parameter with the given {@code name} bypassing injection defense processing
+     *
+     * @param name the name of the parameter, may be {@code null} or blank
+     *
+     * @return the raw parameter value, or {@code null} if {@code name} is blank
+     */
+
     public String getRawParameter(@Nullable String name) {
         return StringUtils.isBlank(name) ? null : super.getParameter(name);
     }
+
+    /**
+     * Returns the raw parameter map of the wrapped request bypassing injection defense processing
+     *
+     * @return the raw map of request parameter names to their values
+     */
 
     public Map<String, String[]> getRawParameterMap() {
         return super.getParameterMap();
     }
 
+    /**
+     * Returns all raw values of the request parameter with the given {@code name} bypassing injection defense processing
+     *
+     * @param name the name of the parameter, may be {@code null} or blank
+     *
+     * @return the raw parameter values, or {@code null} if {@code name} is blank
+     */
+
     public String[] getRawParameterValues(@Nullable String name) {
         return StringUtils.isBlank(name) ? null : super.getParameterValues(name);
     }
 
+    /**
+     * Returns the raw cookies of the wrapped request bypassing injection defense processing
+     *
+     * @return the raw cookies, or {@code null} if the request contains no cookies
+     */
+
     public Cookie[] getRawCookies() {
         return super.getCookies();
     }
+
+    /**
+     * Returns the raw value of the request header with the given {@code name} bypassing injection defense processing
+     *
+     * @param name the name of the header, may be {@code null} or blank
+     *
+     * @return the raw header value, or {@code null} if {@code name} is blank
+     */
 
     public String getRawHeader(@Nullable String name) {
         return StringUtils.isBlank(name) ? null : super.getHeader(name);

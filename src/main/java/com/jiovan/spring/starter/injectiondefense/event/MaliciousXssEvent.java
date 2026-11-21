@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Unikue Ltd. All rights reserved.
+ * Copyright (c) 2022 Jiovan Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cn.unikue.springstarter.injectiondefender.event;
+package com.jiovan.spring.starter.injectiondefense.event;
 
 
 import jakarta.annotation.Nonnull;
@@ -28,7 +28,7 @@ import lombok.Getter;
  *
  * @author David Hsing
  * @see org.springframework.web.context.support.ServletRequestHandledEvent
- * @see cn.unikue.springstarter.injectiondefender.exception.MaliciousXssException
+ * @see com.jiovan.spring.starter.injectiondefense.exception.MaliciousXssException
  */
 @Getter
 @SuppressWarnings("unused")
@@ -41,7 +41,7 @@ public class MaliciousXssEvent extends ApplicationEvent {
      * <p>
      * If thrown by filter, this may be a {@link jakarta.servlet.http.HttpServletRequest}
      * <br>
-     * If thrown by jackson, this may be a {@link com.fasterxml.jackson.core.JsonParser}
+     * If thrown by jackson, this may be a {@link tools.jackson.core.JsonParser}
      */
     public MaliciousXssEvent(@Nonnull Object source) {
         super(source);
